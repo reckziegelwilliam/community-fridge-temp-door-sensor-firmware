@@ -168,6 +168,10 @@ void app_init(void) {
 }
 
 void app_update(uint32_t millis_since_boot) {
+    // Always update the door sensor debounce state machine (non-blocking)
+    // This must be called on every main loop iteration for proper debouncing
+    door_sensor_update(millis_since_boot);
+    
     // On first update, initialize timing and take first sample immediately
     if (first_update) {
         last_sample_ms = millis_since_boot;
@@ -178,7 +182,7 @@ void app_update(uint32_t millis_since_boot) {
         current_temp = sensors_read_temperature_c();
         add_to_history(current_temp);
         average_temp = calculate_average();
-        door_open = door_sensor_is_open();
+        door_open = door_sensor_is_open();  // Now returns immediately (non-blocking)
         current_status = determine_status();
         led_status_set(current_status);
         
@@ -194,7 +198,7 @@ void app_update(uint32_t millis_since_boot) {
         
         // Read sensors
         current_temp = sensors_read_temperature_c();
-        door_open = door_sensor_is_open();
+        door_open = door_sensor_is_open();  // Now returns immediately (non-blocking)
         
         // Update history and compute average
         add_to_history(current_temp);

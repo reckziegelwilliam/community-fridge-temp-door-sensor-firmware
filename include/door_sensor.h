@@ -15,12 +15,18 @@
  *   - Magnet mounted on the door
  *   - When door is closed, magnet is near switch → switch closed
  *   - When door opens, magnet moves away → switch opens
+ * 
+ * Non-blocking Debouncing:
+ * This module uses a state machine approach for debouncing that does NOT
+ * block the main loop. Call door_sensor_update() from the main loop, and
+ * door_sensor_is_open() returns the last confirmed debounced state.
  */
 
 #ifndef DOOR_SENSOR_H
 #define DOOR_SENSOR_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 /**
  * @brief Initialize the door sensor GPIO
@@ -36,16 +42,31 @@
 void door_sensor_init(void);
 
 /**
+ * @brief Update the door sensor debounce state machine (non-blocking)
+ * 
+ * This function should be called from the main loop on every iteration.
+ * It handles the timing and sampling for debouncing without blocking.
+ * 
+ * @param millis_since_boot Current time in milliseconds (from get_absolute_time)
+ * 
+ * The debounce logic:
+ *   - Samples the GPIO at DEBOUNCE_INTERVAL_MS intervals
+ *   - Tracks consecutive samples that match
+ *   - Updates the confirmed state after DEBOUNCE_SAMPLES consistent readings
+ */
+void door_sensor_update(uint32_t millis_since_boot);
+
+/**
  * @brief Check if the door is currently open
  * 
  * Returns the debounced state of the door sensor.
+ * This function returns immediately without blocking.
  * 
  * @return true if door is open, false if door is closed
  * 
- * @note This function uses software debouncing to filter out
- *       electrical noise and mechanical bounce. The first call
- *       after a state change may take up to ~50ms to return
- *       the new state (configurable via DEBOUNCE_* in config.h).
+ * @note The returned state is updated by door_sensor_update(). State changes
+ *       are confirmed after DEBOUNCE_SAMPLES consistent readings at
+ *       DEBOUNCE_INTERVAL_MS intervals (~50ms with default settings).
  */
 bool door_sensor_is_open(void);
 

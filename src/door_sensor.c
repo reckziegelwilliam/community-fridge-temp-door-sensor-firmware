@@ -78,6 +78,19 @@ bool door_sensor_raw_state(void) {
 }
 
 /**
+ * @brief Update function for API compatibility (no-op in blocking implementation)
+ * 
+ * This function exists for API compatibility but does nothing in this
+ * implementation since door_sensor_is_open() handles debouncing synchronously.
+ * 
+ * @param millis_since_boot Unused in this implementation
+ */
+void door_sensor_update(uint32_t millis_since_boot) {
+    (void)millis_since_boot;  // Suppress unused parameter warning
+    // No-op: debouncing is done synchronously in door_sensor_is_open()
+}
+
+/**
  * @brief Read debounced door state
  * 
  * Implementation:
@@ -128,4 +141,3 @@ bool door_sensor_is_open(void) {
         return (open_count > (DEBOUNCE_SAMPLES / 2));
     }
 }
-
