@@ -1,0 +1,1 @@
+# Community Fridge Temperature / Door Sensor Firmware Placeholder ReadMe
